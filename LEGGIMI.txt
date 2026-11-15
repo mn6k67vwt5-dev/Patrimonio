@@ -1,0 +1,13 @@
+Il mio Patrimonio - app installabile (offline)
+
+Questa cartella va pubblicata su un indirizzo https (un qualsiasi hosting di file statici).
+Non contiene nessun dato personale: i dati restano sul dispositivo e si caricano con "Importa da file".
+
+Dopo la pubblicazione, apri l'indirizzo una volta con internet:
+- iPhone (Safari): Condividi > Aggiungi alla schermata Home.
+- Mac (Safari): File > Aggiungi al Dock. Mac (Chrome): menu > Trasmetti, salva e condividi > Installa pagina come app.
+Da quel momento l'app si apre dalla sua icona anche senza internet.
+
+Dati: sul Mac apri il file "Il mio Patrimonio - offline.html", Panoramica > Scarica backup.
+Nell'app: Panoramica > Importa da file. Per l'iPhone passa il file di backup con AirDrop o iCloud.
+Ogni dispositivo tiene i suoi dati: per allinearli usa Scarica backup / Importa da file.
