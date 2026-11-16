@@ -100,8 +100,8 @@ details summary{cursor:pointer;color:var(--text2);font-size:13px;margin-top:10px
 .empty{color:var(--muted);padding:10px 0}
 body.hide .amt{filter:blur(9px)}
 #goalBar i,#fiBar i{background:var(--s3)}
-#geo{grid-template-columns:130px 1fr 150px}#geo .bar i,#incCats .bar i{background:var(--s1)}
-#geoEd label{display:block;font-size:12.5px;color:var(--text2);margin-top:8px}
+#geo,#sec{grid-template-columns:130px 1fr 150px}#geo .bar i,#incCats .bar i{background:var(--s1)}#sec{grid-template-columns:170px 1fr 150px}#sec .bar i{background:var(--s3)}
+#geoEd label,#secEd label{display:block;font-size:12.5px;color:var(--text2);margin-top:8px}
 .heat{border-collapse:separate;border-spacing:2px;font-size:12.5px}
 .heat th{border:0;padding:3px 7px;font-size:11.5px}
 .heat td{border:0;border-radius:6px;padding:6px 7px}
@@ -174,6 +174,8 @@ td input[type=date]{width:142px;text-align:left}
       <div id="nextOut" class="amt" style="margin-top:10px;font-size:14px"></div></div>
     <div class="card"><h2>Esposizione geografica degli ETF azionari</h2><p class="sub" id="geoSub"></p><div class="cats" id="geo"></div>
       <details><summary>Dati per ETF (modificabili)</summary><p class="sub" style="margin-top:8px">Una riga per paese con nome e peso in percento, ad esempio "Stati Uniti 62,59". Usa il factsheet ufficiale dell'emittente.</p><div id="geoEd"></div></details></div>
+    <div class="card"><h2>Esposizione per settore degli ETF azionari</h2><p class="sub" id="secSub"></p><div class="cats" id="sec"></div>
+      <details><summary>Dati per ETF (modificabili)</summary><p class="sub" style="margin-top:8px">Una riga per settore con nome e peso in percento, ad esempio "Finanza 22,74". Usa la pagina o il factsheet dell'emittente.</p><div id="secEd"></div></details></div>
     <div class="card"><h2>Chiusura del mese</h2><p class="sub" id="closeSub">Automatica: al cambio mese l'app salva da sola il mese appena finito, con l'ultimo valore registrato. Il pulsante serve solo se vuoi fissare tu il valore.</p>
       <div class="row"><button class="b" id="saveMonth">Fissa a mano</button><button class="b" id="unlockMonth" hidden>Torna all'automatico</button><span class="sub" id="saveMsg" style="margin:0"></span></div>
       <details><summary>Tabella dati mensili</summary><div class="scroll amt" id="histTable"></div></details></div>
@@ -250,6 +252,7 @@ td input[type=date]{width:142px;text-align:left}
     <div class="kpis" id="anKpis"></div>
     <div class="card"><h2>Patrimonio per classe</h2><p class="sub" id="clsNote">Chiusure mensili per classe di attivo; l'ultimo punto è oggi.</p>
       <div class="row" style="margin-bottom:10px"><button class="b on" data-cm="eur">Euro</button><button class="b" data-cm="pct">Percentuale</button></div>
+      <div class="warnbox" id="clsFix" hidden style="margin-bottom:12px">Manca lo storico per classe 2025-2026. Importa il file <b>aggiornamento-dati.json</b>: aggiunge solo quello che manca, senza toccare gli altri dati. <button class="b" id="clsFixBtn" style="margin-left:6px">Scegli il file</button></div>
       <div class="legend" id="clsLeg"></div><div class="chartbox tall amt"><canvas id="cCls"></canvas></div></div>
     <div class="grid2">
       <div class="card"><h2>Lavoro contro investimenti</h2><p class="sub">Somme cumulate: quanto è entrato dal lavoro, quanto hanno reso gli investimenti e quanto hai speso.</p>
@@ -457,7 +460,7 @@ function calibrate(){
 
 /* ---------- render ---------- */
 function render(){if(!S.got.pos||!S.got.hist)return;
-  renderFresh();renderKpis();renderCharts();renderHist();renderAlloc();renderGeo();renderGoal();renderNext();renderPos();renderPosSum();renderOps();renderFlow();renderTx();renderStocks();renderAnalisi();renderFire();renderRecord();renderYears();renderProj();renderSpGrid();renderTax();renderLib();renderCoast();renderShips();renderAnno();renderPlan();snapshot();autoClose();}
+  renderFresh();renderKpis();renderCharts();renderHist();renderAlloc();renderGeo();renderSec();renderGoal();renderNext();renderPos();renderPosSum();renderOps();renderFlow();renderTx();renderStocks();renderAnalisi();renderFire();renderRecord();renderYears();renderProj();renderSpGrid();renderTax();renderLib();renderCoast();renderShips();renderAnno();renderPlan();snapshot();autoClose();}
 function renderFresh(){const it=items().filter(i=>i.sym),live=it.filter(i=>val(i).live).length;let t="Prezzi non ancora caricati";
   if(S.prices&&S.prices.updatedAt){const d=new Date(S.prices.updatedAt);t="Prezzi del "+d.toLocaleDateString("it-IT",{day:"numeric",month:"short"})+", ore "+d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});}
   $("fresh").textContent=t+" · "+live+" di "+it.length+" titoli prezzati";}
@@ -493,13 +496,13 @@ function multiChart(id,type,labels,sets,fmt,opt){opt=opt||{};const grid=css("--l
 function legend(id,sets){$(id).innerHTML=sets.map(s=>'<span><i style="background:var('+s.c+')"></i>'+esc(s.l)+"</span>").join("");}
 const tile=(l,v,s,c)=>'<div class="kpi"><div class="l">'+l+'</div><div class="v amt'+(c?" "+c:"")+'">'+v+'</div><div class="s amt">'+s+"</div></div>";
 function renderAnalisi(){if(!window.Chart)return;const F=fire(),surf=css("--surface");
-  const H=S.hist||{},cm=Object.keys(H.cls||{}).filter(m=>m<NOW),ms=[...new Set(cm.concat(Object.keys(H.nw||{}).filter(m=>m<NOW)))].sort();if(S.pos)ms.push(NOW);
+  const H=S.hist||{},cm=Object.keys(H.cls||{}).filter(m=>m<NOW).sort(),ms=cm.length?cm.slice():Object.keys(H.nw||{}).filter(m=>m<NOW).sort();if(S.pos)ms.push(NOW);
   const ND="Solo totale",cAt=m=>{const c=clsAt(m);if(c)return c;const v=nwAt(m);return v!=null?{[ND]:v}:{};};
   const used=CLASSES.concat([ND]).filter(k=>ms.some(m=>(cAt(m)[k]||0)>0));
   const cs=used.map(k=>({l:k===ND?"Solo totale, senza suddivisione":k,c:k===ND?"--muted":CC[k],d:ms.map(m=>{const c=cAt(m),t=Object.keys(c).reduce((a,x)=>a+(c[x]||0),0);return clsMode==="pct"?(t?+((c[k]||0)/t*100).toFixed(2):0):Math.round(c[k]||0);}),x:{fill:true,borderColor:surf,borderWidth:1.5}}));
   multiChart("cCls","line",ms.map(lab),cs,clsMode==="pct"?((v,ax)=>num(v,ax?0:1)+"%"):KF,{stack:true,max:clsMode==="pct"?100:undefined});legend("clsLeg",cs);
-  const fc=cm.sort()[0];$("clsNote").textContent=!cm.length?"Su questo dispositivo manca la suddivisione per classe dei mesi passati, quindi vedi solo il totale in grigio. Per averla importa il file storico-per-classe.json da Panoramica, Importa da file; da qui in avanti si riempie da sola a ogni cambio mese."
-    :used.indexOf(ND)>=0?"Chiusure mensili per classe; l'ultimo punto è oggi. Prima di "+lab(fc)+" c'è solo il totale (in grigio).":"Chiusure mensili per classe di attivo; l'ultimo punto è oggi.";
+  $("clsNote").textContent=cm.length?"Chiusure mensili per classe di attivo, da "+lab(cm[0])+"; l'ultimo punto è oggi.":"Su questo dispositivo manca lo storico per classe, quindi vedi solo il totale in grigio.";
+  $("clsFix").hidden=!!cm.length||!LOCAL;
   const fm=flowMonths();let cw=0,ci=0,ce=0;const W=[],I=[],E=[];
   fm.forEach(m=>{const inc=sum(flow("income",m)),sp=sum(flow("spend",m)),a=nwAt(m),b=nwAt(addM(m,-1));cw+=inc;ce+=sp;if(a!=null&&b!=null)ci+=a-b-(inc-sp);W.push(Math.round(cw));I.push(Math.round(ci));E.push(Math.round(ce));});
   const wi=[{l:"Entrate da lavoro e altro",c:"--s3",d:W},{l:"Rendimento degli investimenti",c:"--s1",d:I},{l:"Spese",c:"--s2",d:E}];
@@ -802,6 +805,15 @@ function renderGeo(){const G=(S.geo&&S.geo.etf)||{},agg={},miss=[];let cov=0,all
   $("geoSub").textContent="Pesi per paese dai documenti degli emittenti, applicati al valore attuale di ogni ETF. Coperti "+pct(all?cov/all:0,0)+" degli ETF azionari"+(miss.length?"; senza dati: "+miss.join(", "):"")+".";
   if(!busy($("geoEd")))$("geoEd").innerHTML=etf.map(it=>{const g=G[it.id]||{};return "<label>"+esc(it.name)+(g.skip?" (non azionario, escluso)":"")+(g.src?" · "+esc(g.src):"")+(g.date?" · "+esc(g.date):"")+
     '<textarea rows="3" data-geo="'+esc(it.id)+'">'+esc(Object.entries(g.w||{}).map(r=>r[0]+" "+inp(r[1],2)).join("\n"))+"</textarea></label>";}).join("");}
+function renderSec(){const G=(S.geo&&S.geo.etf)||{},X=(S.geo&&S.geo.sec)||{},agg={},miss=[];let cov=0,all=0;const etf=items().filter(i=>i.cat==="ETF"&&i.sym),skip=it=>(G[it.id]&&G[it.id].skip)||(X[it.id]&&X[it.id].skip);
+  etf.forEach(it=>{const v=val(it).v,g=X[it.id];if(skip(it))return;all+=v;if(!g||!g.w||!Object.keys(g.w).length){miss.push(it.name);return;}
+    cov+=v;let t=0;for(const k in g.w){agg[k]=(agg[k]||0)+v*g.w[k]/100;t+=g.w[k];}if(t<99.5)agg["Altri"]=(agg["Altri"]||0)+v*(100-t)/100;});
+  const rows=Object.entries(agg).filter(r=>r[0].indexOf("Altri")!==0).sort((a,b)=>b[1]-a[1]).slice(0,12),rest=cov-rows.reduce((a,r)=>a+r[1],0);
+  if(rest>0.5)rows.push(["Altri settori",rest]);const mx=rows.length?Math.max(...rows.map(r=>r[1])):1;
+  $("sec").innerHTML=rows.length?rows.map(r=>"<div>"+esc(r[0])+'</div><div class="bar" title="'+esc(r[0])+": "+pct(r[1]/cov)+'"><i style="width:'+(r[1]/mx*100)+'%"></i></div><div class="a">'+pct(r[1]/cov)+' · <span class="amt">'+eur(r[1])+"</span></div>").join(""):'<div class="empty">Nessun dato inserito</div>';
+  $("secSub").textContent=rows.length?"Pesi per settore dalle pagine degli emittenti, applicati al valore attuale di ogni ETF. Coperti "+pct(all?cov/all:0,0)+" degli ETF azionari"+(miss.length?"; senza dati: "+miss.join(", "):"")+".":LOCAL?"Su questo dispositivo mancano i pesi per settore: importa il file aggiornamento-dati.json da Importa da file, oppure inseriscili qui sotto.":"Nessun peso per settore inserito.";
+  if(!busy($("secEd")))$("secEd").innerHTML=etf.map(it=>{const g=X[it.id]||{};return "<label>"+esc(it.name)+(skip(it)?" (non azionario, escluso)":"")+(g.src?" · "+esc(g.src):"")+(g.date?" · "+esc(g.date):"")+
+    '<textarea rows="3" data-sec="'+esc(it.id)+'">'+esc(Object.entries(g.w||{}).map(r=>r[0]+" "+inp(r[1],2)).join("\n"))+"</textarea></label>";}).join("");}
 function renderPos(){const T=$("posT");if(busy(T)){posDirty=true;return;}posDirty=false;const tot=total()||1,c=byClass();
   if(!busy($("fxBox")))$("fxIn").value=inp(fx(),4);
   let h="<tr><th>Posizione</th><th>Quote</th><th>Prezzo</th><th>Ultima seduta</th><th>Valore</th><th>Prezzo medio di carico</th><th>Guadagno</th><th>Peso</th><th></th></tr>";
@@ -912,8 +924,12 @@ $("posT").addEventListener("change",e=>{const i=e.target.dataset.i;if(i==null||!
   if(f==="qty"){it.qty=v;it.est=false;}else if(f==="pmc")it.pmc=v;else if(v!=null)it.base=v;savePos();});
 $("fxIn").addEventListener("change",e=>{const v=parse(e.target.value);if(!db||!(v>0))return;S.prices=Object.assign({items:{}},S.prices,{eurusd:v,updatedAt:new Date().toISOString()});write("pf/prices",S.prices);render();});
 $("geoEd").addEventListener("change",e=>{const id=e.target.dataset.geo;if(!id||!db)return;const w={};e.target.value.split("\n").forEach(l=>{const m=l.trim().match(/^(.+?)[\s;:]+([\d.,]+)\s*%?$/);if(m){const v=parse(m[2]);if(v>0)w[m[1].trim()]=v;}});
-  const etf=Object.assign({},(S.geo&&S.geo.etf)||{});etf[id]=Object.assign({},etf[id],{w,src:"inserito a mano",date:TODAY});delete etf[id].skip;S.geo={etf};write("pf/geo",S.geo);});
+  const etf=Object.assign({},(S.geo&&S.geo.etf)||{});etf[id]=Object.assign({},etf[id],{w,src:"inserito a mano",date:TODAY});delete etf[id].skip;S.geo=Object.assign({},S.geo,{etf});write("pf/geo",S.geo);});
 $("geoEd").addEventListener("focusout",()=>setTimeout(renderGeo,0));
+$("secEd").addEventListener("change",e=>{const id=e.target.dataset.sec;if(!id||!db)return;const w={};e.target.value.split("\n").forEach(l=>{const m=l.trim().match(/^(.+?)[\s;:]+([\d.,]+)\s*%?$/);if(m){const v=parse(m[2]);if(v>0)w[m[1].trim()]=v;}});
+  const sec=Object.assign({},(S.geo&&S.geo.sec)||{});sec[id]={w,src:"inserito a mano",date:TODAY};S.geo=Object.assign({},S.geo,{sec});write("pf/geo",S.geo);});
+$("secEd").addEventListener("focusout",()=>setTimeout(renderSec,0));
+$("clsFixBtn").addEventListener("click",()=>$("bkFile").click());
 $("posT").addEventListener("focusout",()=>setTimeout(()=>{if(posDirty)render();},0));
 $("posT").addEventListener("click",e=>{const d=e.target.dataset.del;if(d==null||!db)return;if(!armed(e.target))return;S.pos.items.splice(+d,1);savePos();render();});
 $("alloc").addEventListener("change",e=>{const k=e.target.dataset.tg;if(!k||!db)return;const v=parse(e.target.value);if(v==null)return;
@@ -1032,7 +1048,7 @@ function doImport(txt){const m=$("bkMsg");let o;try{o=JSON.parse(txt);}catch(e){
   if(!o||!o.docs||!o.docs["pf/positions"]){m.textContent="Il testo non è un backup di questa app.";return;}calibrated=false;snapDone=false;db.importAll(o);m.textContent="Backup importato.";notice("");}
 function setupBackup(){
   $("bkSub").textContent=LOCAL?"Versione offline: i dati restano in questo browser, su questo dispositivo. Scarica un backup ogni tanto; puoi importare qui anche un backup copiato dalla versione online.":"Copia i dati per portarli nella versione offline (lì: incolla e Importa).";
-  $("bkCopy").addEventListener("click",()=>{const t=dump();$("bkTxt").value=t;$("bkTxt").select();
+  $("bkCopy").addEventListener("click",()=>{if(["pos","prices","hist","settings","daily","geo"].some(k=>S.fresh[k]===false)){$("bkMsg").textContent="Dati non ancora sincronizzati: aspetta qualche secondo e riprova.";return;}const t=dump();$("bkTxt").value=t;$("bkTxt").select();
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$("bkMsg").textContent="Backup copiato.";}).catch(()=>{$("bkMsg").textContent="Seleziona e copia il testo qui sotto.";});});
   if(!LOCAL)return;$("anPrint").hidden=false;["bkDown","bkFileL","bkPaste"].forEach(i=>{$(i).hidden=false;});
   $("bkDown").addEventListener("click",()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([dump()],{type:"application/json"}));a.download="patrimonio-backup-"+TODAY+".json";document.body.appendChild(a);a.click();a.remove();$("bkMsg").textContent="Backup scaricato.";});
