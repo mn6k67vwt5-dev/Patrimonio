@@ -198,6 +198,8 @@ td input[type=date]{width:142px;text-align:left}
           <label>Prezzo medio di carico (per quota)<input name="pmc" inputmode="decimal" size="8"></label>
           <button class="b p">Aggiungi</button>
         </form></details></div>
+    <div class="card"><h2>Guadagno per classe</h2><p class="sub">Guadagno aperto dei titoli con prezzo medio di carico: (prezzo di oggi − prezzo medio) × quote, in euro.</p>
+      <div class="kpis" id="pgKpis" style="margin:0"></div><p class="sub" id="pgNote" style="margin:12px 0 0"></p></div>
   </section>
 
   <section data-tab="operazioni" hidden>
@@ -272,7 +274,7 @@ td input[type=date]{width:142px;text-align:left}
       <div class="form" id="fiForm">
         <label>Spesa futura l'anno €<input id="fiSpend" inputmode="decimal" size="9"></label>
         <label>Tasso di prelievo %<input id="fiWr" inputmode="decimal" size="5"></label>
-        <label>Rendimento annuo %<input id="fiRet" inputmode="decimal" size="5"></label>
+        <label>Rendimento medio annuo %<input id="fiRet" inputmode="decimal" size="5"></label>
         <label>Inflazione %<input id="fiInfl" inputmode="decimal" size="5"></label>
         <label>Risparmio al mese €<input id="fiSave" inputmode="decimal" size="9"></label>
         <label>Reddito ridotto al mese €<input id="fiRed" inputmode="decimal" size="8" placeholder="0"></label>
@@ -287,7 +289,7 @@ td input[type=date]{width:142px;text-align:left}
       <div class="legend" id="projLeg"></div><div class="chartbox tall amt"><canvas id="cProj"></canvas></div>
       <div class="scroll amt" style="margin-top:12px"><table id="projT"></table></div></div>
     <div class="card"><h2>Coast FIRE</h2><p class="sub">La cifra che, lasciata investita senza aggiungere altro, arriva da sola al numero FIRE nell'anno che scegli.</p>
-      <div class="form"><label>Anno in cui vuoi essere libero<input id="fiCoast" inputmode="numeric" size="6"></label></div>
+      <div class="form"><label>Anno in cui vuoi essere libero<input id="fiCoast" inputmode="numeric" size="6"></label><label>Rendimento medio annuo %<input id="fiCoastRet" inputmode="decimal" size="6"></label></div>
       <div class="bar big" id="coBar" style="margin:14px 0 8px"><i></i></div><div class="sub amt" id="coTxt" style="margin:0"></div></div>
     <div class="card"><h2>Obiettivo</h2><p class="sub">Imposta cifra e data: l'app calcola quanto manca e quanto serve al mese.</p>
       <div class="form" id="goalForm"><label>Cifra obiettivo €<input id="goalAmt" inputmode="decimal" size="9"></label><label>Entro il<input id="goalDate" type="date"></label></div>
@@ -296,7 +298,8 @@ td input[type=date]{width:142px;text-align:left}
 
   <section data-tab="piano" hidden>
     <div class="kpis" id="plKpis"></div>
-    <div class="card"><h2>Piano di vita a fasi</h2><p class="sub">Tre fasi: lavoro a bordo, lavoro a terra, senza lavoro. Tutto in euro di oggi; rendimento, inflazione e tasso di prelievo sono quelli delle Ipotesi nella pagina FIRE.</p>
+    <div class="card"><h2>Piano di vita a fasi</h2><p class="sub">Tre fasi: lavoro a bordo, lavoro a terra, senza lavoro. Tutto in euro di oggi. Se lasci vuoti rendimento e inflazione uso quelli delle Ipotesi FIRE; il tasso di prelievo è sempre quello delle Ipotesi.</p>
+      <div class="form" id="plRates" style="margin-bottom:12px"><label>Rendimento medio annuo %<input id="plRet" inputmode="decimal" size="6"></label><label>Inflazione %<input id="plInfl" inputmode="decimal" size="6"></label></div>
       <div class="phases" id="plForm">
         <fieldset><legend><i style="background:var(--s1)"></i>A bordo</legend><label>Fino a fine anno<input id="plU1" inputmode="numeric"></label><label>Risparmio al mese €<input id="plS1" inputmode="decimal"></label></fieldset>
         <fieldset><legend><i style="background:var(--s3)"></i>A terra</legend><label>Entrate nette al mese €<input id="plI2" inputmode="decimal"></label><label>Spese al mese €<input id="plE2" inputmode="decimal"></label><label>Fino a fine anno<input id="plU2" inputmode="numeric"></label></fieldset>
@@ -337,6 +340,8 @@ td input[type=date]{width:142px;text-align:left}
     <div class="card"><h2>Variazione mensile del patrimonio</h2><p class="sub">Differenza rispetto al mese prima, versamenti compresi. Blu = aumento, arancione = calo; più intenso = variazione più grande.</p>
       <div class="row" style="margin-bottom:10px"><button class="b on" data-gm="eur">Euro</button><button class="b" data-gm="pct">Percentuale</button></div>
       <div class="scroll amt"><table class="heat" id="chgT"></table></div></div>
+    <div class="card"><h2>Patrimonio mese per mese</h2><p class="sub">Valore a fine mese, in euro; il mese in corso è il valore di oggi. Ogni mese si aggiunge da solo.</p>
+      <div class="scroll amt"><table class="heat" id="nwT"></table></div></div>
     <div class="grid3 amt" id="hof"></div>
   </section>
 
@@ -452,7 +457,7 @@ function calibrate(){
 
 /* ---------- render ---------- */
 function render(){if(!S.got.pos||!S.got.hist)return;
-  renderFresh();renderKpis();renderCharts();renderHist();renderAlloc();renderGeo();renderGoal();renderNext();renderPos();renderOps();renderFlow();renderTx();renderStocks();renderAnalisi();renderFire();renderRecord();renderYears();renderProj();renderSpGrid();renderTax();renderLib();renderCoast();renderShips();renderAnno();renderPlan();snapshot();autoClose();}
+  renderFresh();renderKpis();renderCharts();renderHist();renderAlloc();renderGeo();renderGoal();renderNext();renderPos();renderPosSum();renderOps();renderFlow();renderTx();renderStocks();renderAnalisi();renderFire();renderRecord();renderYears();renderProj();renderSpGrid();renderTax();renderLib();renderCoast();renderShips();renderAnno();renderPlan();snapshot();autoClose();}
 function renderFresh(){const it=items().filter(i=>i.sym),live=it.filter(i=>val(i).live).length;let t="Prezzi non ancora caricati";
   if(S.prices&&S.prices.updatedAt){const d=new Date(S.prices.updatedAt);t="Prezzi del "+d.toLocaleDateString("it-IT",{day:"numeric",month:"short"})+", ore "+d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});}
   $("fresh").textContent=t+" · "+live+" di "+it.length+" titoli prezzati";}
@@ -475,7 +480,7 @@ function renderKpis(){
 /* ---------- analysis and FIRE ---------- */
 const KF=(v,ax)=>ax?num(v/1000,v%1000===0?0:1)+" k€":eur(v);
 function fire(){const f=(S.settings&&S.settings.fire)||{},n=(v,d)=>(typeof v==="number"&&isFinite(v))?v:d;
-  return {wr:n(f.wr,4)>0?n(f.wr,4):4,ret:n(f.ret,5),infl:n(f.infl,2),save:typeof f.save==="number"?f.save:null,spend:f.spend>0?f.spend:null,coastY:f.coastY>0?f.coastY:null,red:f.red>0?f.red:0,until:f.until||""};}
+  return {wr:n(f.wr,4)>0?n(f.wr,4):4,ret:n(f.ret,5),infl:n(f.infl,2),save:typeof f.save==="number"?f.save:null,spend:f.spend>0?f.spend:null,coastY:f.coastY>0?f.coastY:null,coastRet:typeof f.coastRet==="number"&&isFinite(f.coastRet)?f.coastRet:null,red:f.red>0?f.red:0,until:f.until||""};}
 function clsAt(ym){if(ym===NOW&&S.pos)return byClass();return (S.hist&&S.hist.cls&&S.hist.cls[ym])||null;}
 function flowMonths(){const a=Object.keys((S.hist&&S.hist.income)||{}).concat(Object.keys((S.hist&&S.hist.spend)||{}),S.tx.filter(x=>x.type!=="giro"&&x.date).map(x=>x.date.slice(0,7))).sort()[0],out=[];
   if(!a)return out;for(let m=a;m<=NOW&&out.length<600;m=addM(m,1))out.push(m);return out;}
@@ -488,11 +493,13 @@ function multiChart(id,type,labels,sets,fmt,opt){opt=opt||{};const grid=css("--l
 function legend(id,sets){$(id).innerHTML=sets.map(s=>'<span><i style="background:var('+s.c+')"></i>'+esc(s.l)+"</span>").join("");}
 const tile=(l,v,s,c)=>'<div class="kpi"><div class="l">'+l+'</div><div class="v amt'+(c?" "+c:"")+'">'+v+'</div><div class="s amt">'+s+"</div></div>";
 function renderAnalisi(){if(!window.Chart)return;const F=fire(),surf=css("--surface");
-  const ms=Object.keys((S.hist&&S.hist.cls)||{}).sort().filter(m=>m<NOW);if(S.pos)ms.push(NOW);
-  const used=CLASSES.filter(k=>ms.some(m=>((clsAt(m)||{})[k]||0)>0));
-  const cs=used.map(k=>({l:k,c:CC[k],d:ms.map(m=>{const c=clsAt(m)||{},t=CLASSES.reduce((a,x)=>a+(c[x]||0),0);return clsMode==="pct"?(t?+((c[k]||0)/t*100).toFixed(2):0):Math.round(c[k]||0);}),x:{fill:true,borderColor:surf,borderWidth:1.5}}));
+  const H=S.hist||{},cm=Object.keys(H.cls||{}).filter(m=>m<NOW),ms=[...new Set(cm.concat(Object.keys(H.nw||{}).filter(m=>m<NOW)))].sort();if(S.pos)ms.push(NOW);
+  const ND="Solo totale",cAt=m=>{const c=clsAt(m);if(c)return c;const v=nwAt(m);return v!=null?{[ND]:v}:{};};
+  const used=CLASSES.concat([ND]).filter(k=>ms.some(m=>(cAt(m)[k]||0)>0));
+  const cs=used.map(k=>({l:k===ND?"Solo totale, senza suddivisione":k,c:k===ND?"--muted":CC[k],d:ms.map(m=>{const c=cAt(m),t=Object.keys(c).reduce((a,x)=>a+(c[x]||0),0);return clsMode==="pct"?(t?+((c[k]||0)/t*100).toFixed(2):0):Math.round(c[k]||0);}),x:{fill:true,borderColor:surf,borderWidth:1.5}}));
   multiChart("cCls","line",ms.map(lab),cs,clsMode==="pct"?((v,ax)=>num(v,ax?0:1)+"%"):KF,{stack:true,max:clsMode==="pct"?100:undefined});legend("clsLeg",cs);
-  $("clsNote").textContent=ms.length<3?"Lo storico per classe si riempie da solo a ogni cambio mese.":"Chiusure mensili per classe di attivo; l'ultimo punto è oggi.";
+  const fc=cm.sort()[0];$("clsNote").textContent=!cm.length?"Su questo dispositivo manca la suddivisione per classe dei mesi passati, quindi vedi solo il totale in grigio. Per averla importa il file storico-per-classe.json da Panoramica, Importa da file; da qui in avanti si riempie da sola a ogni cambio mese."
+    :used.indexOf(ND)>=0?"Chiusure mensili per classe; l'ultimo punto è oggi. Prima di "+lab(fc)+" c'è solo il totale (in grigio).":"Chiusure mensili per classe di attivo; l'ultimo punto è oggi.";
   const fm=flowMonths();let cw=0,ci=0,ce=0;const W=[],I=[],E=[];
   fm.forEach(m=>{const inc=sum(flow("income",m)),sp=sum(flow("spend",m)),a=nwAt(m),b=nwAt(addM(m,-1));cw+=inc;ce+=sp;if(a!=null&&b!=null)ci+=a-b-(inc-sp);W.push(Math.round(cw));I.push(Math.round(ci));E.push(Math.round(ce));});
   const wi=[{l:"Entrate da lavoro e altro",c:"--s3",d:W},{l:"Rendimento degli investimenti",c:"--s1",d:I},{l:"Spese",c:"--s2",d:E}];
@@ -569,6 +576,10 @@ function renderRecord(){const sr=nwSeries(),dl=sr.filter(r=>r.d!=null),tot=total
       h+='<td style="background:'+rgba(x>=0?"--s1":"--s2",(Math.sqrt(Math.abs(x)/mxv)*.5+.05).toFixed(2))+'" title="'+lab(r.m)+": "+sg(r.d,eur)+" ("+sg(r.d/r.p,pct)+')">'+fm(x)+"</td>";}
     h+='<td class="t"><span class="'+cls(o.d)+'">'+(pc?sg(o.d/o.start,v=>pct(v,1)):sg(o.d,v=>num(v,0)))+"</span></td></tr>";});
   $("chgT").innerHTML=h;
+  let hv="<tr><th>Anno</th>"+MESI.map(m=>"<th>"+m+"</th>").join("")+"<th>Variazione anno</th></tr>";
+  Y.slice().reverse().forEach(o=>{hv+="<tr><td>"+o.y+"</td>";for(let i=1;i<=12;i++){const m=o.y+"-"+String(i).padStart(2,"0"),r=by[m];hv+=r&&r.v!=null?(m===NOW?'<td class="t" title="Valore di oggi">'+num(r.v,0)+"</td>":"<td>"+num(r.v,0)+"</td>"):"<td></td>";}
+    hv+='<td class="t"><span class="'+cls(o.d)+'">'+sg(o.d,v=>num(v,0))+"</span></td></tr>";});
+  $("nwT").innerHTML=hv;
   /* hall of fame */
   const fl=flowMonths().map(m=>{const i=sum(flow("income",m)),e=sum(flow("spend",m));return {m,i,e,sv:i-e};}),top=(a,k,desc)=>a.slice().sort((x,y)=>desc?y[k]-x[k]:x[k]-y[k]).slice(0,5);
   const list=(title,sub,rows)=>'<div class="card"><h2>'+title+'</h2><p class="sub" style="margin:0">'+sub+'</p><ol class="rank">'+(rows.length?rows.map((r,k)=>'<li><span class="r">'+(k+1)+'</span><span class="m">'+r.l+'</span><span class="x'+(r.c?" "+r.c:"")+'">'+r.x+(r.s?"<small>"+r.s+"</small>":"")+"</span></li>").join(""):'<li class="empty">Ancora nessun dato</li>')+"</ol></div>";
@@ -629,8 +640,8 @@ function renderLib(){const F=fire(),spM=refSpend()/12,y=NOW.slice(0,4),fm=[];for
   $("libSub").textContent="Mesi di vita futura pagati dal tuo risparmio: risparmio ÷ spesa mensile di riferimento, "+eur(spM)+(F.spend!=null?" (la spesa futura che hai scritto nelle Ipotesi).":" (media degli ultimi 12 mesi).");
   $("libStats").innerHTML="<div><b>"+mo(per/spM)+"</b><span>per ogni mese di lavoro</span></div><div><b>"+mo(ytd/spM)+"</b><span>comprati nel "+y+yy(ytd/spM)+"</span></div><div><b>"+mo(t12/spM)+"</b><span>negli ultimi 12 mesi"+yy(t12/spM)+"</span></div>";
   if(window.Chart)signBars("cLib",fm.map(lab),sv.map(v=>+(v/spM).toFixed(1)),(v,ax)=>num(v,ax?0:1)+(ax?"":" mesi"));}
-function renderCoast(){const F=fire(),tot=total(),Y=+NOW.slice(0,4),s12=refSpend(),target=s12>0?s12/(F.wr/100):0,cy=F.coastY>Y?F.coastY:Y+25,ra=(1+F.ret/100)/(1+F.infl/100)-1,rr=Math.pow(1+ra,1/12)-1;
-  if(document.activeElement!==$("fiCoast"))$("fiCoast").value=cy;const bar=$("coBar").firstChild;
+function renderCoast(){const F=fire(),tot=total(),Y=+NOW.slice(0,4),s12=refSpend(),target=s12>0?s12/(F.wr/100):0,cy=F.coastY>Y?F.coastY:Y+25,cr=F.coastRet!=null?F.coastRet:F.ret,ra=(1+cr/100)/(1+F.infl/100)-1,rr=Math.pow(1+ra,1/12)-1;
+  if(document.activeElement!==$("fiCoast"))$("fiCoast").value=cy;if(document.activeElement!==$("fiCoastRet")){$("fiCoastRet").value=F.coastRet!=null?inp(F.coastRet,1):"";$("fiCoastRet").placeholder="come FIRE: "+inp(F.ret,1);}const bar=$("coBar").firstChild;
   if(!(target>0)){bar.style.width="0%";$("coTxt").textContent="Servono spese registrate.";return;}
   const coast=target/Math.pow(1+ra,cy-Y),pr=tot/coast;bar.style.width=Math.max(0,Math.min(100,pr*100))+"%";let t="Coast FIRE per il "+cy+": "+eur(coast)+". ";
   if(tot>=coast)t+="Ci sei già: senza versare più nulla, con un rendimento reale del "+num(ra*100,1)+"% arrivi a "+eur(target)+" entro il "+cy+".";
@@ -641,8 +652,8 @@ function renderCoast(){const F=fire(),tot=total(),Y=+NOW.slice(0,4),s12=refSpend
 /* life plan: aboard, ashore, no work. Everything in today's euros. */
 function plan(){const p=(S.settings&&S.settings.plan)||{},Y=+NOW.slice(0,4),n=v=>(typeof v==="number"&&isFinite(v))?v:null,auto=fire().save!=null?fire().save:save12(),eDef=Math.round(refSpend()/12);
   const u1=Math.max(Y,n(p.u1)!=null?p.u1:Y+5),e2=n(p.e2)!=null?p.e2:eDef;
-  return {raw:p,auto,eDef,u1,s1:n(p.s1)!=null?p.s1:auto,i2:n(p.i2)!=null?p.i2:1800,e2,u2:n(p.u2)!=null&&p.u2>=u1?p.u2:null,e3:n(p.e3)!=null?p.e3:e2,i3:n(p.i3)!=null?p.i3:0,end:Math.max(u1+5,n(p.end)!=null?p.end:Y+60),vol:n(p.vol)!=null&&p.vol>=0?p.vol:12};}
-function simPlan(P,F,tot,u1,rnd){const rr=Math.pow((1+F.ret/100)/(1+F.infl/100),1/12)-1,Y=+NOW.slice(0,4),m0=+NOW.slice(5),N=(P.end-Y)*12+12-m0,k1=(u1-Y)*12+12-m0,k2=P.u2!=null?(Math.max(P.u2,u1)-Y)*12+12-m0:null,need=Math.max(0,P.e3-P.i3)*12/(F.wr/100);
+  return {raw:p,auto,eDef,u1,s1:n(p.s1)!=null?p.s1:auto,i2:n(p.i2)!=null?p.i2:1800,e2,u2:n(p.u2)!=null&&p.u2>=u1?p.u2:null,e3:n(p.e3)!=null?p.e3:e2,i3:n(p.i3)!=null?p.i3:0,end:Math.max(u1+5,n(p.end)!=null?p.end:Y+60),vol:n(p.vol)!=null&&p.vol>=0?p.vol:12,ret:n(p.ret)!=null?p.ret:fire().ret,infl:n(p.infl)!=null?p.infl:fire().infl};}
+function simPlan(P,F,tot,u1,rnd){const rr=Math.pow((1+P.ret/100)/(1+P.infl/100),1/12)-1,Y=+NOW.slice(0,4),m0=+NOW.slice(5),N=(P.end-Y)*12+12-m0,k1=(u1-Y)*12+12-m0,k2=P.u2!=null?(Math.max(P.u2,u1)-Y)*12+12-m0:null,need=Math.max(0,P.e3-P.i3)*12/(F.wr/100);
   let v=tot,ph=1,ruin=null,stop=null,vL=null,vS=null;const yr=[tot],phs=[1];
   for(let k=1;k<=N;k++){if(ph===1&&k>k1){ph=2;vL=v;}if(ph===2&&(k2!=null?k>k2:v>=need)){ph=3;stop=k-1;vS=v;}
     v=v*(1+(rnd?rnd():rr))+(ph===1?P.s1:ph===2?P.i2-P.e2:P.i3-P.e3);if(v<=0){v=0;if(ruin==null)ruin=k;}
@@ -654,6 +665,7 @@ function renderPlan(){if(!vis("piano")||!S.pos)return;const P=plan(),F=fire(),to
   if(!busy($("plForm"))){const p=P.raw,set=(id,v,ph)=>{$(id).value=v!=null?inp(v,0):"";if(ph)$(id).placeholder=ph;};
     set("plU1",P.u1);set("plS1",typeof p.s1==="number"?p.s1:null,"auto: "+inp(P.auto,0));set("plI2",P.i2);set("plE2",typeof p.e2==="number"?p.e2:null,"auto: "+inp(P.eDef,0));set("plU2",P.u2,"fino al FIRE");
     set("plE3",typeof p.e3==="number"?p.e3:null,"come a terra");set("plI3",P.i3||null,"0");set("plEnd",P.end);}
+  if(!busy($("plRates"))){const fr=fire(),p=P.raw;$("plRet").value=typeof p.ret==="number"?inp(p.ret,1):"";$("plRet").placeholder="come FIRE: "+inp(fr.ret,1);$("plInfl").value=typeof p.infl==="number"?inp(p.infl,1):"";$("plInfl").placeholder="come FIRE: "+inp(fr.infl,1);}
   if(document.activeElement!==$("plVol"))$("plVol").value=inp(P.vol,1);
   let first=null;for(let y=Y;y<P.end;y++){if(simPlan(P,F,tot,y,null).ruin==null){first=y;break;}}
   $("plKpis").innerHTML=tile("Lasci la nave","fine "+P.u1,"Con "+eur(R.vL!=null?R.vL:R.end)+" da parte")+
@@ -668,14 +680,14 @@ function renderPlan(){if(!vis("piano")||!S.pos)return;const P=plan(),F=fire(),to
   if(R.need>0)sets.push({l:"Numero FIRE",c:"--muted",d:L.map(()=>Math.round(R.need)),x:{borderDash:[5,5],borderWidth:1.5,pointHoverRadius:0}});
   multiChart("cPlan","line",L,sets,KM);legend("plLeg",sets);
   /* probability: 1000 runs with random yearly returns */
-  const key=JSON.stringify([P.u1,P.s1,P.i2,P.e2,P.u2,P.e3,P.i3,P.end,P.vol,F.ret,F.infl,F.wr,Math.round(tot),NOW]);
-  if(key!==mcKey){const s=P.vol/100/Math.sqrt(12),mu=Math.log((1+F.ret/100)/(1+F.infl/100))/12,rng=mulberry(20261115),g=()=>{let u=0;while(u===0)u=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rng());},rnd=()=>Math.exp(mu+s*g())-1;
+  const key=JSON.stringify([P.u1,P.s1,P.i2,P.e2,P.u2,P.e3,P.i3,P.end,P.vol,P.ret,P.infl,F.wr,Math.round(tot),NOW]);
+  if(key!==mcKey){const s=P.vol/100/Math.sqrt(12),mu=Math.log((1+P.ret/100)/(1+P.infl/100))/12,rng=mulberry(20261115),g=()=>{let u=0;while(u===0)u=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rng());},rnd=()=>Math.exp(mu+s*g())-1;
     const runs=[];for(let i=0;i<1000;i++)runs.push(simPlan(P,F,tot,P.u1,rnd));const n=runs[0].yr.length,q=[[],[],[]];
     for(let i=0;i<n;i++){const a=runs.map(r=>r.yr[i]).sort((x,y)=>x-y);q[0].push(a[100]);q[1].push(a[500]);q[2].push(a[900]);}
     const ru=runs.filter(r=>r.ruin!=null).map(r=>r.ruin).sort((x,y)=>x-y),st=runs.filter(r=>r.stop!=null).map(r=>r.stop).sort((x,y)=>x-y);
     mcKey=key;mcRes={q,ok:1-ru.length/1000,ru,st};}
   const M=mcRes,last=M.q[0].length-1;
-  $("mcSub").textContent="Mille versioni del tuo piano, ognuna con anni buoni e anni cattivi estratti a caso attorno al rendimento che hai scelto ("+num(F.ret,1)+"% l'anno, inflazione "+num(F.infl,1)+"%). Riuscita = i soldi non finiscono prima del "+P.end+".";
+  $("mcSub").textContent="Mille versioni del tuo piano, ognuna con anni buoni e anni cattivi estratti a caso attorno al rendimento che hai scelto ("+num(P.ret,1)+"% l'anno, inflazione "+num(P.infl,1)+"%). Riuscita = i soldi non finiscono prima del "+P.end+".";
   $("mcStats").innerHTML='<div><b class="'+(M.ok>=.8?"up":M.ok<.5?"down":"")+'">'+pct(M.ok,0)+"</b><span>probabilità di riuscita</span></div><div><b>"+eur(M.q[1][last])+"</b><span>caso mediano nel "+P.end+"</span></div><div><b>"+(M.q[0][last]>0?eur(M.q[0][last]):"0 €")+"</b><span>caso sfortunato, 1 su 10</span></div>"+
     (P.u2==null&&M.st.length>=500?"<div><b>"+yOf(M.st[Math.floor(M.st.length/2)])+"</b><span>anno mediano in cui smetti del tutto</span></div>":"");
   $("mcTxt").textContent=M.ru.length?"Nei casi che vanno male ("+Math.round(M.ru.length/10)+" su 100) i soldi finiscono tra il "+yOf(M.ru[0])+" e il "+yOf(M.ru[M.ru.length-1])+", più spesso attorno al "+yOf(M.ru[Math.floor(M.ru.length/2)])+". È una stima statistica, non una previsione.":"In nessuna delle mille prove i soldi finiscono. È una stima statistica, non una previsione.";
@@ -761,6 +773,12 @@ function renderAlloc(){if(busy($("alloc")))return;const c=byClass(),tot=total()|
 function rebalTh(){const v=S.settings&&S.settings.rebal;return typeof v==="number"&&v>0?v:5;}
 function rebalOff(){const c=byClass(),tot=total(),tg=(S.settings&&S.settings.targets)||{},th=rebalTh();if(!(tot>0))return [];
   return CLASSES.map(k=>({k,cur:c[k]/tot,t:tg[k]||0,d:c[k]/tot-(tg[k]||0)})).filter(o=>(o.t>0||o.cur>0)&&Math.abs(o.d)*100>th);}
+function renderPosSum(){const by={},all={e:0,c:0,n:0,m:0,v:0},miss={};
+  items().filter(it=>it.sym).forEach(it=>{const k=it.cat,o=by[k]||(by[k]={e:0,c:0,n:0,m:0,v:0}),g=gain(it),v=val(it).v;o.m++;o.v+=v;all.m++;all.v+=v;
+    if(g){o.e+=g.e;o.c+=g.c;o.n++;all.e+=g.e;all.c+=g.c;all.n++;}else(miss[k]=miss[k]||[]).push(it.sym||it.name);});
+  const ks=CLASSES.filter(k=>by[k]),t=(l,o)=>tile(l,o.n?sg(o.e,eur):"n.d.",o.n?sg(o.e/o.c,pct)+" su "+eur(o.c)+" investiti · "+o.n+" di "+o.m+" titoli":"Nessun titolo con prezzo medio di carico",o.n?cls(o.e):"");
+  $("pgKpis").innerHTML=ks.map(k=>t(k,by[k])).join("")+(ks.length>1?t("Totale",all):"");
+  const mk=ks.filter(k=>miss[k]);$("pgNote").textContent=mk.length?"Senza prezzo medio di carico, quindi fuori dal conto: "+mk.map(k=>k+" ("+miss[k].join(", ")+")").join("; ")+". Inseriscilo nella colonna \"Prezzo medio di carico\" e il guadagno si aggiorna da solo.":"Tutti i titoli hanno il prezzo medio di carico.";}
 function renderRebal(){const th=rebalTh(),off=rebalOff(),tot=total();if(document.activeElement!==$("rbTh"))$("rbTh").value=inp(th,1);
   $("rbMsg").innerHTML=off.length?'<div class="warnbox">Da ribilanciare: '+off.map(o=>"<b>"+esc(o.k)+"</b> "+pct(o.cur)+" contro "+pct(o.t,0)+" di target, "+(o.d>0?eur(o.d*tot)+" in più":eur(-o.d*tot)+" in meno")).join(" · ")+".</div>"
     :'<div class="sub" style="margin:0">Tutte le classi sono entro '+num(th,1)+" punti dal target.</div>";}
@@ -880,7 +898,7 @@ $("moreBtn").addEventListener("click",e=>{e.stopPropagation();const m=$("more");
 document.addEventListener("click",e=>{if(!$("more").hidden&&!$("more").contains(e.target))$("more").hidden=true;});
 document.querySelectorAll("[data-cm]").forEach(b=>b.addEventListener("click",()=>{clsMode=b.dataset.cm;document.querySelectorAll("[data-cm]").forEach(x=>x.classList.toggle("on",x===b));if(S.got.pos)renderAnalisi();}));
 $("fiForm").addEventListener("change",()=>{if(!db)return;const g=id=>parse($(id).value),f={wr:g("fiWr")>0?g("fiWr"):4,ret:g("fiRet")!=null?g("fiRet"):5,infl:g("fiInfl")!=null?g("fiInfl"):2,red:g("fiRed")>0?g("fiRed"):0,until:$("fiUntil").value||""};
-  if(g("fiSave")!=null)f.save=g("fiSave");if(g("fiSpend")>0)f.spend=g("fiSpend");const of=(S.settings&&S.settings.fire)||{};if(of.coastY)f.coastY=of.coastY;S.settings=Object.assign({},S.settings,{fire:f});write("pf/settings",S.settings);renderFire();renderAnalisi();renderProj();renderLib();renderCoast();});
+  if(g("fiSave")!=null)f.save=g("fiSave");if(g("fiSpend")>0)f.spend=g("fiSpend");const of=(S.settings&&S.settings.fire)||{};if(of.coastY)f.coastY=of.coastY;if(typeof of.coastRet==="number")f.coastRet=of.coastRet;S.settings=Object.assign({},S.settings,{fire:f});write("pf/settings",S.settings);renderFire();renderAnalisi();renderProj();renderLib();renderCoast();});
 $("fiForm").addEventListener("focusout",()=>setTimeout(renderFire,0));
 window.addEventListener("hashchange",showTab);
 $("hideBtn").addEventListener("click",()=>{const on=document.body.classList.toggle("hide");$("hideBtn").textContent=on?"Mostra importi":"Nascondi importi";$("hideBtn").setAttribute("aria-pressed",on);try{localStorage.setItem("pfHide",on?"1":"");}catch(e){}});
@@ -970,10 +988,12 @@ $("zaT").addEventListener("focusout",()=>setTimeout(renderTax,0));
 $("zaT").addEventListener("click",e=>{const d=e.target.dataset.zdel;if(d==null||!db)return;if(!armed(e.target))return;const rows=zaRows().slice();rows.splice(+d,1);saveTax(rows);renderTax();});
 $("zaForm").addEventListener("submit",e=>{e.preventDefault();if(!db)return;const f=e.target,y=Math.round(parse(f.year.value)||0);if(!(y>1990&&y<2200))return;const rows=zaRows().slice();
   rows.push({id:"z"+Date.now(),year:y,amount:parse(f.amount.value)||0,used:parse(f.used.value)||0,where:f.where.value.trim()});saveTax(rows);f.amount.value="";f.used.value="0";f.where.value="";renderTax();});
+$("fiCoastRet").addEventListener("change",()=>{if(!db)return;const v=parse($("fiCoastRet").value),f=Object.assign({},(S.settings&&S.settings.fire)||{});if(v==null)delete f.coastRet;else if(v>-50&&v<50)f.coastRet=v;else return;
+  S.settings=Object.assign({},S.settings,{fire:f});write("pf/settings",S.settings);renderCoast();});
 $("fiCoast").addEventListener("change",()=>{const v=Math.round(parse($("fiCoast").value)||0);if(!db||!(v>1990&&v<2300))return;S.settings=Object.assign({},S.settings,{fire:Object.assign({},(S.settings&&S.settings.fire)||{},{coastY:v})});write("pf/settings",S.settings);renderCoast();});
-const planSave=()=>{if(!db)return;const o={};[["u1","plU1"],["s1","plS1"],["i2","plI2"],["e2","plE2"],["u2","plU2"],["e3","plE3"],["i3","plI3"],["end","plEnd"],["vol","plVol"]].forEach(a=>{const v=parse($(a[1]).value);if(v!=null)o[a[0]]=v;});
+const planSave=()=>{if(!db)return;const o={};[["ret","plRet"],["infl","plInfl"],["u1","plU1"],["s1","plS1"],["i2","plI2"],["e2","plE2"],["u2","plU2"],["e3","plE3"],["i3","plI3"],["end","plEnd"],["vol","plVol"]].forEach(a=>{const v=parse($(a[1]).value);if(v!=null)o[a[0]]=v;});
   S.settings=Object.assign({},S.settings,{plan:o});write("pf/settings",S.settings);renderPlan();};
-$("plForm").addEventListener("change",planSave);$("plVol").addEventListener("change",planSave);$("plForm").addEventListener("focusout",()=>setTimeout(renderPlan,0));
+$("plForm").addEventListener("change",planSave);$("plVol").addEventListener("change",planSave);$("plRates").addEventListener("change",planSave);$("plRates").addEventListener("focusout",()=>setTimeout(renderPlan,0));$("plForm").addEventListener("focusout",()=>setTimeout(renderPlan,0));
 const anStep=k=>{const Y=yearStats(),i=Y.findIndex(o=>o.y===anYear)+k;if(i>=0&&i<Y.length){anYear=Y[i].y;renderAnno();}};
 $("anPrev").addEventListener("click",()=>anStep(-1));$("anNext").addEventListener("click",()=>anStep(1));$("anPrint").addEventListener("click",()=>window.print());
 $("shT").addEventListener("change",e=>{const i=e.target.dataset.h,k=e.target.dataset.f;if(i==null||!db)return;const rows=shRows().map(r=>Object.assign({},r)),r=rows[+i];
